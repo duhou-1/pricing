@@ -1,0 +1,2 @@
+var WX_APP_TOKEN = "AT_NlMVgcqtjpCaELdDsJfoqZK1Gdf6o7DU";
+var WX_UID = "UID_vSv94vUHcPd97SJS6vIDffEgK0yL";
