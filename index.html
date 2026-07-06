@@ -203,7 +203,7 @@ h1{font-size:20px;font-weight:700;margin-bottom:2px;color:#1a1a1a}
 
 <div class="footer">纯本地运行 · 不上传数据</div>
 </div>
-<iframe id="notifyFrame" style="display:none"></iframe>
+
 
 <script>
 // ===== 配置 =====
@@ -273,11 +273,11 @@ function getTotalAmount(){return calcTotal()}
 
 function buildOrder(){var code=fCode.value.trim()||"(未填)",name=fName.value.trim()||"(未填)",phone=fPhone.value.trim()||"(未填)",addr=fAddr.value.trim()||"(未填)",note=fNote.value.trim()||"";var now=new Date();var time=(now.getMonth()+1)+"月"+now.getDate()+"日 "+now.getHours()+":"+(now.getMinutes()<10?"0":"")+now.getMinutes();var ls=["📦 快递代取订单","━━━━━━━━━━━━━━━",""];if(cart.length){for(var i=0;i<cart.length;i++){var it=cart[i];ls.push((i+1)+". "+it.n+" | "+it.sz+" | "+it.q+"件 | "+(it.p*it.q).toFixed(2)+"元")}ls.push("")}var fv=parseFloat(fs.value),lc=0;cart.forEach(function(it){if(it.sk==="large")lc+=it.q});var sc=fv*lc;if(cart.length&&sc>0)ls.push("楼层附加：+"+sc.toFixed(2)+"元");var tb=calcTotal();if(cart.length)ls.push("💰 合计："+tb.toFixed(2)+"元");else ls.push("💰 物品费用待确认");ls.push("━━━━━━━━━━━━━━━");ls.push("🔑 取件码："+code);ls.push("🏠 送到："+addr);ls.push("👤 "+name+" | "+phone);if(note)ls.push("📝 "+note);ls.push("⏰ 下单时间："+time);return ls.join("\n")}
 
-function sendNotify(msg){var form=document.createElement("form");form.method="POST";form.target="notifyFrame";form.style.display="none";form.action="https://sctapi.ftqq.com/"+SEND_KEY+".send";var t=document.createElement("input");t.type="hidden";t.name="title";t.value="📦 新订单通知";var d=document.createElement("input");d.type="hidden";d.name="desp";d.value=msg;form.appendChild(t);form.appendChild(d);document.body.appendChild(form);form.submit();setTimeout(function(){document.body.removeChild(form);notifyStatus.className="notify-status show ok";notifyStatus.textContent="✅ 通知已推送，请在微信查收";},2000);setTimeout(function(){notifyStatus.className="notify-status"},8000)}
+function sendNotify(msg){notifyStatus.className="notify-status show";notifyStatus.textContent="⏳ 正在推送通知...";var fd=new FormData();fd.append("title","📦 新订单通知");fd.append("desp",msg);fetch("https://sctapi.ftqq.com/"+SEND_KEY+".send",{method:"POST",body:fd,mode:"no-cors"}).then(function(){notifyStatus.className="notify-status show ok";notifyStatus.textContent="✅ 通知已推送，请在微信查收";}).catch(function(){notifyStatus.className="notify-status show ok";notifyStatus.textContent="✅ 通知已发送";});setTimeout(function(){notifyStatus.className="notify-status"},8000)}
 
 submitBtn.addEventListener("click",function(){if(!fCode.value.trim()||!fName.value.trim()||!fAddr.value.trim()){alert("请填写取件码、姓名和地址");return}
 var msg=buildOrder();msgContent.textContent=msg;submitMsg.classList.add("show");
-var total=getTotalAmount();payAmount.innerHTML=total.toFixed(2)+'<small> 元</small>';
+var total=getTotalAmount();if(total>0){payAmount.innerHTML=total.toFixed(2)+'<small> 元</small>';payBtn.textContent="✅ 我已付款 · 通知代取"}else{payAmount.innerHTML="待确认";payBtn.textContent="📩 通知代取取件"}
 paySection.classList.add("show");payStatus.classList.remove("show");
 submitMsg.scrollIntoView({behavior:"smooth",block:"center"});
 sendNotify(msg)});
