@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>快递代取 · AI智能计价</title>
+<title>快递代取 · 在线下单</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f5f5f5;min-height:100vh;padding:24px 16px;display:flex;flex-direction:column;align-items:center}
@@ -7,8 +7,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .card{background:#fff;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.08);padding:24px 20px;margin-bottom:14px}
 .card:last-child{margin-bottom:0}
 h1{font-size:20px;font-weight:700;margin-bottom:2px;color:#1a1a1a}
-.subtitle{font-size:13px;color:#999;margin-bottom:14px}
-.section-title{font-size:14px;font-weight:600;margin-bottom:10px;color:#1a1a1a;display:flex;align-items:center;gap:6px}
+.subtitle{font-size:13px;color:#999;margin-bottom:14px;line-height:1.5}
+.step-title{font-size:14px;font-weight:600;margin-bottom:12px;color:#1a1a1a;display:flex;align-items:center;gap:6px;padding-bottom:8px;border-bottom:1px solid #f0f0f0}
+.step-title .step-num{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#4a90d9;color:#fff;font-size:11px;font-weight:600;margin-right:4px}
+.step-title .tag-opt{font-size:11px;color:#aaa;font-weight:400;margin-left:auto}
+
+/* form */
+.form-field{margin-bottom:12px}
+.form-field:last-child{margin-bottom:0}
+.form-field label{display:block;font-size:13px;color:#555;margin-bottom:4px;font-weight:500}
+.form-field input,.form-field textarea{width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;outline:none;background:#fff}
+.form-field input:focus,.form-field textarea:focus{border-color:#4a90d9}
+.form-field textarea{resize:vertical;min-height:44px;font-family:inherit}
+.form-field .hint-text{font-size:11px;color:#aaa;margin-top:3px}
+.form-row{display:flex;gap:10px}
+.form-row .form-field{flex:1}
+
+/* item input */
 .input-group{display:flex;gap:8px;margin-bottom:8px}
 .input-group input{flex:1;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;outline:none}
 .input-group input:focus{border-color:#4a90d9}
@@ -18,7 +33,6 @@ h1{font-size:20px;font-weight:700;margin-bottom:2px;color:#1a1a1a}
 .tag-result.show{display:flex}
 .tag-result.matched{background:#eef6ff}
 .tag-result.guess{background:#f0fdf4;border:1px solid #bbf7d0}
-.tag-result.unmatched{background:#fff7ed;border:1px solid #fed7aa}
 .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap}
 .badge-sm{background:#e0f2fe;color:#0369a1}
 .badge-md{background:#fef3c7;color:#92400e}
@@ -40,6 +54,7 @@ h1{font-size:20px;font-weight:700;margin-bottom:2px;color:#1a1a1a}
 .common-items{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
 .common-items button{padding:3px 10px;border:1px solid #e0e0e0;border-radius:14px;background:#fafafa;font-size:12px;color:#555;cursor:pointer}
 .common-items button:hover{background:#eef6ff;border-color:#4a90d9;color:#4a90d9}
+
 .cart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .cart-header .clear-btn{padding:4px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;font-size:12px;color:#999;cursor:pointer}
 .cart-header .clear-btn:hover{background:#fef2f2;border-color:#fca5a5;color:#dc2626}
@@ -54,15 +69,30 @@ h1{font-size:20px;font-weight:700;margin-bottom:2px;color:#1a1a1a}
 .cart-table .rm-btn{color:#ccc;cursor:pointer;background:none;border:none;font-size:15px;padding:0 4px}
 .cart-table .rm-btn:hover{color:#d9534f}
 .cart-empty{text-align:center;color:#ccc;padding:16px 0;font-size:13px}
+
 .summary-row{margin-top:12px;padding-top:12px;border-top:1px solid #eee}
 .summary-line{display:flex;justify-content:space-between;font-size:13px;color:#666;padding:3px 0}
 .floor-line{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#666;padding:6px 0}
 .floor-line select{padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:12px;background:#fff}
 .summary-line.total{font-size:18px;font-weight:700;color:#d9534f;padding-top:8px;border-top:1px dashed #ddd;margin-top:6px}
 .summary-line.total small{font-size:14px;font-weight:400}
-.summary-actions{margin-top:12px}
-.summary-actions button{width:100%;padding:10px;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#4a90d9;color:#fff}
-.summary-actions button:hover{background:#357abd}
+.submit-area{margin-top:12px}
+.submit-btn{width:100%;padding:12px;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;background:#10b981;color:#fff;margin-bottom:8px}
+.submit-btn:hover{background:#059669}
+.submit-btn:disabled{background:#a7f3d0;cursor:default}
+.secondary-btn{width:100%;padding:9px;border:1px solid #ddd;border-radius:8px;background:#fff;font-size:13px;color:#666;cursor:pointer}
+.secondary-btn:hover{background:#f5f5f5}
+.submit-msg{display:none;margin-top:10px;padding:14px;border-radius:8px;background:#f0fdf4;border:1px solid #bbf7d0;font-size:13px;line-height:1.8}
+.submit-msg.show{display:block}
+.submit-msg .pre{white-space:pre-wrap;font-size:13px;line-height:1.8;color:#333}
+.submit-msg .msg-copy{margin-top:8px;padding:8px 18px;border:none;border-radius:6px;background:#4a90d9;color:#fff;font-size:13px;cursor:pointer}
+.submit-msg .msg-copy:hover{background:#357abd}
+.notify-status{font-size:12px;color:#888;margin-top:6px;display:none}
+.notify-status.show{display:block}
+.notify-status.ok{color:#10b981}
+.notify-status.fail{color:#d9534f}
+
+/* notify setup */
 .price-table{width:100%;border-collapse:collapse;font-size:13px}
 .price-table th{text-align:left;font-weight:500;color:#888;padding-bottom:6px;border-bottom:1px solid #eee;font-size:12px}
 .price-table td{padding:7px 0;border-bottom:1px solid #f0f0f0;vertical-align:top}
@@ -74,18 +104,50 @@ h1{font-size:20px;font-weight:700;margin-bottom:2px;color:#1a1a1a}
 .surcharge-row td{padding-top:3px;font-size:12px;color:#999}
 .surcharge-row .price{color:#999;font-weight:400}
 .footer{text-align:center;padding:14px 0 4px;font-size:12px;color:#bbb;line-height:1.6}
-@media(max-width:480px){body{padding:12px 8px}.card{padding:18px 14px}.cart-table{font-size:12px}.summary-line.total{font-size:16px}}
+@media(max-width:480px){body{padding:12px 8px}.card{padding:18px 14px}.form-row{flex-direction:column;gap:0}.cart-table{font-size:12px}.summary-line.total{font-size:16px}}
 </style>
 </head>
 <body>
 <div class="container">
 
 <div class="card" style="margin-top:0">
-  <h1>📦 快递代取 · 智能计价</h1>
-  <p class="subtitle">AI自动识别大小 · 可手动调整 · 多件混装汇总报价</p>
-  <div class="section-title">🔍 输入物品</div>
+  <h1>📦 快递代取 · 在线下单</h1>
+  <p class="subtitle">填写取件信息 → 可选添加物品 → 提交订单，代取收到通知后帮你取件送达</p>
+
+  <div class="step-title"><span class="step-num">1</span> 🔑 取件信息 <span class="tag-opt">必填</span></div>
+
+  <div class="form-field">
+    <label>快递取件码</label>
+    <input type="text" id="fCode" placeholder="例如：6-8-8888">
+    <div class="hint-text">多个取件码用逗号隔开，如：6-8-8888, 5-3-6666</div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-field">
+      <label>👤 收货姓名</label>
+      <input type="text" id="fName" placeholder="你的称呼">
+    </div>
+    <div class="form-field">
+      <label>📱 手机号</label>
+      <input type="tel" id="fPhone" placeholder="手机号码">
+    </div>
+  </div>
+
+  <div class="form-field">
+    <label>🏠 送到地址</label>
+    <input type="text" id="fAddr" placeholder="如：X栋X单元XXX室 / X区X号楼X层">
+  </div>
+
+  <div class="form-field">
+    <label>📝 备注（选填）</label>
+    <input type="text" id="fNote" placeholder="例如：放门口、到了打电话、下午再送等">
+  </div>
+</div>
+
+<div class="card">
+  <div class="step-title"><span class="step-num">2</span> 📥 添加物品 <span class="tag-opt">选填 · 不知道有什么包裹可以跳过</span></div>
   <div class="input-group">
-    <input type="text" id="itemInput" placeholder="例：凉席、羽绒服、一箱牛奶、手机" autocomplete="off">
+    <input type="text" id="itemInput" placeholder="例：凉席、羽绒服、一箱牛奶" autocomplete="off">
     <button id="classifyBtn">识别</button>
   </div>
   <div id="tagResult" class="tag-result">
@@ -106,42 +168,37 @@ h1{font-size:20px;font-weight:700;margin-bottom:2px;color:#1a1a1a}
   <div class="common-items" id="commonItems"></div>
 </div>
 
-<div class="card">
-  <div class="cart-header">
-    <div class="section-title" style="margin-bottom:0">📋 订单明细</div>
-    <button class="clear-btn" id="clearBtn">清空全部</button>
-  </div>
-  <div id="cartEmpty" class="cart-empty">还没有添加物品</div>
-  <table class="cart-table" id="cartTable" style="display:none">
+<div class="card" id="cartCard" style="display:none">
+  <div class="step-title"><span class="step-num">3</span> 📋 物品清单</div>
+  <table class="cart-table" id="cartTable">
     <thead><tr><th style="width:38%">物品</th><th style="width:13%">数量</th><th style="width:18%;text-align:right">单价</th><th style="width:18%;text-align:right">小计</th><th style="width:8%"></th></tr></thead>
     <tbody id="cartBody"></tbody>
   </table>
-  <div class="summary-row" id="summaryArea" style="display:none">
+  <div class="summary-row" id="summaryArea">
     <div id="detailLines"></div>
     <div class="floor-line"><span>🚚 送到</span><span id="floorSelector"></span></div>
     <div class="summary-line total" id="grandTotal">0.00<small> 元</small></div>
-    <div class="summary-actions">
-      <button id="copyBtn">📋 复制报价单</button>
-    </div>
   </div>
 </div>
 
 <div class="card">
-  <div class="section-title">📋 费率标准</div>
-  <table class="price-table">
-    <thead><tr><th>类别</th><th>参考范围</th><th>单价</th></tr></thead>
-    <tbody>
-      <tr><td class="cate">小件</td><td class="desc">不超过鞋盒的盒类 · 包装类<br><span class="ex">衣服·书籍·手机·文件袋·小零食</span></td><td class="price">1.5 元</td></tr>
-      <tr><td class="cate">中件</td><td class="desc">鞋盒大小 · 中小型纸箱 · 抽纸整提<br><span class="ex">鞋子·整提纸巾·小家电·背包·羽绒服</span></td><td class="price">2.5 元</td></tr>
-      <tr><td class="cate">大件</td><td class="desc">一箱一箱（类似赣南脐橙）<br><span class="ex">整箱水果·整箱饮料·被子·行李箱·微波炉</span></td><td class="price">6.5 元</td></tr>
-      <tr class="surcharge-row"><td></td><td class="desc">四楼以上（含四楼），每件大件加收</td><td class="price">+2 元</td></tr>
-    </tbody>
-  </table>
-</div>
+  <div class="step-title"><span class="step-num">4</span> 📩 提交订单</div>
 
-<div class="footer">纯本地运行 · 不上传任何数据</div>
-</div>
+  <div class="submit-area" id="submitArea">
+    <button class="submit-btn" id="submitBtn">📩 提交订单 · 通知代取</button>
+    <button class="secondary-btn" id="previewBtn">👁 预览订单内容</button>
+  </div>
 
+  <div class="notify-status" id="notifyStatus"></div>
+
+  <div class="submit-msg" id="submitMsg">
+    <div class="pre" id="msgContent"></div>
+    <button class="msg-copy" id="msgCopyBtn">📋 复制订单 · 去微信发送</button>
+  </div>
+
+  <div class="footer">纯本地运行 · 不上传任何数据 · 通知通过 Server酱 转发</div>
+</div>
+<iframe id="notifyFrame" style="display:none"></iframe>
 <script>
 (function(){
 var CATEGORIES=[
@@ -162,8 +219,7 @@ var CATEGORIES=[
 var SZ={small:{n:"小件",p:1.5,b:"badge-sm"},medium:{n:"中件",p:2.5,b:"badge-md"},large:{n:"大件",p:6.5,b:"badge-lg"}};
 
 function cls(t){
-  t=t.trim();if(!t)return null;
-  var r=null;
+  t=t.trim();if(!t)return null;var r=null;
   function h(s,w){return s.indexOf(w)!==-1}
   if(/超大|巨型/.test(t))r={s:"large",rs:"超大/巨型",cf:"高"};
   if(!r&&/[一二两三四五六七八九十\d百千]+箱|整箱|一箱|大箱/.test(t)&&!/小箱/.test(t))r={s:"large",rs:'量词"箱"',cf:"高"};
@@ -173,38 +229,10 @@ function cls(t){
   if(!r&&/[一二两三四五六七八九十\d百千]+包|大包|整包/.test(t)&&!/小包/.test(t))r={s:"large",rs:'量词"包"',cf:"高"};
   if(!r&&/[一二两三四五六七八九十\d百千]+桶|整桶|大桶/.test(t)&&!/小桶/.test(t))r={s:"large",rs:'量词"桶"',cf:"高"};
   if(!r&&/[一二两三四五六七八九十\d百千]+瓶|整瓶|大瓶/.test(t)&&!/小瓶/.test(t))r={s:"medium",rs:'量词"瓶"',cf:"高"};
-  if(!r&&/^小/.test(t))r={s:"small",rs:'含"小"',cf:"高"};
-  if(!r&&/^中[的件等]/.test(t))r={s:"medium",rs:'含"中"',cf:"高"};
-  if(!r&&/^大[的件]/.test(t))r={s:"large",rs:'含"大"',cf:"高"};
-  if(!r){
-    var mc=[];
-    for(var i=0;i<CATEGORIES.length;i++){
-      var c=CATEGORIES[i],m=false;
-      for(var j=0;j<c.kw.length;j++){if(h(t,c.kw[j])){m=true;break}}
-      if(m){
-        var fi=null;for(var k in c.items){if(h(t,k)){fi=k;break}}
-        mc.push({c:c,fi:fi,sc:cm(t,c.kw)})
-      }
-    }
-    mc.sort(function(a,b){return b.sc-a.sc});
-    if(mc.length>0){
-      var tp=mc[0];
-      if(tp.fi)r={s:tp.c.items[tp.fi],rs:'"'+tp.c.name+'"->'+tp.fi,cf:"高"};
-      else r={s:tp.c.def,rs:'"'+tp.c.name+'"类',cf:"中"};
-    }
-  }
-  if(!r){
-    var cc={};
-    for(var i=0;i<CATEGORIES.length;i++)
-      for(var j=0;j<CATEGORIES[i].kw.length;j++){var kw=CATEGORIES[i].kw[j];if(kw.length>=2&&h(t,kw)){if(!cc[i])cc[i]=0;cc[i]++}}
-    var bi=-1,bc=0;for(var idx in cc){if(cc[idx]>bc){bc=cc[idx];bi=parseInt(idx)}}
-    if(bi>=0)r={s:CATEGORIES[bi].def,rs:'推断为"'+CATEGORIES[bi].name+'"',cf:"低"};
-  }
-  if(!r){
-    if(/箱|包裹|快递|行李/.test(t))r={s:"large",rs:'含容器词',cf:"低"};
-    else if(/盒|袋|包|提/.test(t))r={s:"small",rs:'含容器词',cf:"低"};
-    else r={s:"medium",rs:'常规物品',cf:"低"};
-  }
+  if(!r&&/^小/.test(t))r={s:"small",rs:'含"小"',cf:"高"};if(!r&&/^中[的件等]/.test(t))r={s:"medium",rs:'含"中"',cf:"高"};if(!r&&/^大[的件]/.test(t))r={s:"large",rs:'含"大"',cf:"高"};
+  if(!r){var mc=[];for(var i=0;i<CATEGORIES.length;i++){var c=CATEGORIES[i],m=false;for(var j=0;j<c.kw.length;j++){if(h(t,c.kw[j])){m=true;break}}if(m){var fi=null;for(var k in c.items){if(h(t,k)){fi=k;break}}mc.push({c:c,fi:fi,sc:cm(t,c.kw)})}}mc.sort(function(a,b){return b.sc-a.sc});if(mc.length>0){var tp=mc[0];if(tp.fi)r={s:tp.c.items[tp.fi],rs:'"'+tp.c.name+'"->'+tp.fi,cf:"高"};else r={s:tp.c.def,rs:'"'+tp.c.name+'"类',cf:"中"}}}
+  if(!r){var cc={};for(var i=0;i<CATEGORIES.length;i++)for(var j=0;j<CATEGORIES[i].kw.length;j++){var kw=CATEGORIES[i].kw[j];if(kw.length>=2&&h(t,kw)){if(!cc[i])cc[i]=0;cc[i]++}}var bi=-1,bc=0;for(var idx in cc){if(cc[idx]>bc){bc=cc[idx];bi=parseInt(idx)}}if(bi>=0)r={s:CATEGORIES[bi].def,rs:'推断"'+CATEGORIES[bi].name+'"',cf:"低"}}
+  if(!r){if(/箱|包裹|快递|行李/.test(t))r={s:"large",rs:'含容器词',cf:"低"};else if(/盒|袋|包|提/.test(t))r={s:"small",rs:'含容器词',cf:"低"};else r={s:"medium",rs:'常规物品',cf:"低"}}
   return r;
 }
 function cm(t,kw){var c=0;for(var i=0;i<kw.length;i++){if(t.indexOf(kw[i])!==-1)c++}return c}
@@ -214,9 +242,12 @@ var inp=document.getElementById("itemInput"),cBtn=document.getElementById("class
 var tag=document.getElementById("tagResult"),badge=document.getElementById("badge"),hint=document.getElementById("tagHint");
 var szSel=document.getElementById("sizeSelect"),szOpts=document.querySelectorAll(".size-opt");
 var qty=document.getElementById("addQty"),aBtn=document.getElementById("addBtn");
-var cEmpty=document.getElementById("cartEmpty"),cTable=document.getElementById("cartTable"),cBody=document.getElementById("cartBody");
-var sArea=document.getElementById("summaryArea"),dLines=document.getElementById("detailLines"),gTotal=document.getElementById("grandTotal");
-var clrBtn=document.getElementById("clearBtn"),cpBtn=document.getElementById("copyBtn");
+var cBody=document.getElementById("cartBody"),dLines=document.getElementById("detailLines"),gTotal=document.getElementById("grandTotal");
+var cartCard=document.getElementById("cartCard"),summaryArea=document.getElementById("summaryArea");
+var fCode=document.getElementById("fCode"),fName=document.getElementById("fName"),fPhone=document.getElementById("fPhone"),fAddr=document.getElementById("fAddr"),fNote=document.getElementById("fNote");
+var submitBtn=document.getElementById("submitBtn"),previewBtn=document.getElementById("previewBtn");
+var submitMsg=document.getElementById("submitMsg"),msgContent=document.getElementById("msgContent"),msgCopyBtn=document.getElementById("msgCopyBtn");
+var notifyStatus=document.getElementById("notifyStatus");
 var floorSel=document.getElementById("floorSelector"),common=document.getElementById("commonItems");
 var cur=null,sel=null;
 
@@ -227,99 +258,84 @@ floorSel.appendChild(fs);
 
 szOpts.forEach(function(b){
   b.addEventListener("click",function(){
-    szOpts.forEach(function(x){x.classList.remove("active")});
-    this.classList.add("active");
-    sel=this.getAttribute("data-s");
-    var s=SZ[sel];
-    badge.textContent=s.n;badge.className="badge "+s.b;
-    hint.textContent="已手动选择";
-    aBtn.disabled=false;
+    szOpts.forEach(function(x){x.classList.remove("active")});this.classList.add("active");
+    sel=this.getAttribute("data-s");var s=SZ[sel];badge.textContent=s.n;badge.className="badge "+s.b;hint.textContent="已手动选择";aBtn.disabled=false;
   });
 });
-
-["{s}衣服","{s}T恤","{s}手机","{s}书籍","{s}杯子","{m}鞋子","{m}鞋盒","{m}羽绒服","{m}凉席","{m}小家电","{l}脐橙整箱","{l}饮料整箱","{l}被子","{l}行李箱","{l}大箱子"].forEach(function(l){
-  var b=document.createElement("button");
-  var ic=l.startsWith("{s}")?"🔹":l.startsWith("{m}")?"🔶":"🔴";
-  b.textContent=ic+" "+l.replace(/^\{[sml]\}/,"");
-  b.addEventListener("click",function(){inp.value=l.replace(/^\{[sml]\}/,"");cl()});
-  common.appendChild(b);
-});
+["{s}衣服","{s}T恤","{s}手机","{s}书籍","{s}杯子","{m}鞋子","{m}鞋盒","{m}羽绒服","{m}凉席","{m}小家电","{l}脐橙整箱","{l}饮料整箱","{l}被子","{l}行李箱","{l}大箱子"].forEach(function(l){var b=document.createElement("button");var ic=l.startsWith("{s}")?"🔹":l.startsWith("{m}")?"🔶":"🔴";b.textContent=ic+" "+l.replace(/^\{[sml]\}/,"");b.addEventListener("click",function(){inp.value=l.replace(/^\{[sml]\}/,"");cl()});common.appendChild(b)});
 
 function cl(){
-  var t=inp.value.trim();
-  if(!t){tag.classList.remove("show");cur=null;sel=null;aBtn.disabled=true;szSel.classList.remove("show");return}
-  var r=cls(t);
-  cur=r;tag.classList.add("show");
-  if(r){
-    var s=SZ[r.s];
-    tag.classList.remove("unmatched");
-    tag.classList.add(r.cf==="高"?"matched":"guess");
-    badge.textContent=s.n;badge.className="badge "+s.b;
-    hint.textContent=r.rs+" "+(r.cf==="高"?"|精准":r.cf==="中"?"|推断":"|推测");
-    szSel.classList.add("show");
-    szOpts.forEach(function(b){
-      b.classList.remove("active");
-      if(b.getAttribute("data-s")===r.s)b.classList.add("active");
-    });
-    sel=r.s;
-    aBtn.disabled=false;
-  }else{
-    tag.classList.remove("matched","guess");tag.classList.add("unmatched");
-    badge.textContent="--";hint.textContent="请重新输入";
-    szSel.classList.remove("show");aBtn.disabled=true;sel=null;
-  }
+  var t=inp.value.trim();if(!t){tag.classList.remove("show");cur=null;sel=null;aBtn.disabled=true;szSel.classList.remove("show");return}
+  var r=cls(t);cur=r;tag.classList.add("show");
+  if(r){var s=SZ[r.s];tag.classList.remove("unmatched");tag.classList.add(r.cf==="高"?"matched":"guess");badge.textContent=s.n;badge.className="badge "+s.b;hint.textContent=r.rs+" "+(r.cf==="高"?"|精准":r.cf==="中"?"|推断":"|推测");szSel.classList.add("show");szOpts.forEach(function(b){b.classList.remove("active");if(b.getAttribute("data-s")===r.s)b.classList.add("active")});sel=r.s;aBtn.disabled=false}
+  else{tag.classList.remove("matched","guess");tag.classList.add("unmatched");badge.textContent="--";hint.textContent="请重新输入";szSel.classList.remove("show");aBtn.disabled=true;sel=null}
 }
-
-cBtn.addEventListener("click",cl);
-inp.addEventListener("keydown",function(e){if(e.key==="Enter")cl()});
+cBtn.addEventListener("click",cl);inp.addEventListener("keydown",function(e){if(e.key==="Enter")cl()});
 var at;inp.addEventListener("input",function(){clearTimeout(at);at=setTimeout(cl,350)});
-
-aBtn.addEventListener("click",function(){
-  if(!sel)return;
-  var s=SZ[sel],t=inp.value.trim(),n=parseInt(qty.value,10)||1;
-  cart.push({n:t,sz:s.n,sk:sel,p:s.p,q:n});
-  render();inp.value="";tag.classList.remove("show");szSel.classList.remove("show");cur=null;sel=null;aBtn.disabled=true;qty.value=1;
-});
+aBtn.addEventListener("click",function(){if(!sel)return;var s=SZ[sel],t=inp.value.trim(),n=parseInt(qty.value,10)||1;cart.push({n:t,sz:s.n,sk:sel,p:s.p,q:n});render();inp.value="";tag.classList.remove("show");szSel.classList.remove("show");cur=null;sel=null;aBtn.disabled=true;qty.value=1});
 
 function render(){
   var h=cart.length>0;
-  cEmpty.style.display=h?"none":"block";
-  cTable.style.display=h?"":"none";
-  sArea.style.display=h?"block":"none";
-  if(!h){cBody.innerHTML="";dLines.innerHTML="";gTotal.innerHTML="0.00<small> 元</small>";return}
+  cartCard.style.display=h?"block":"none";if(!h){cBody.innerHTML="";dLines.innerHTML="";gTotal.innerHTML="0.00<small> 元</small>";submitMsg.classList.remove("show");submitBtn.disabled=false;return}
   var ht="",tb=0,lc=0;
-  for(var i=0;i<cart.length;i++){
-    var it=cart[i],lt=it.p*it.q;tb+=lt;
-    if(it.sk==="large")lc+=it.q;
-    ht+='<tr><td><div class="iname">'+it.n+'</div><div class="isize">'+it.sz+'</div></td><td>'+it.q+'</td><td class="iprice">'+it.p.toFixed(1)+'</td><td class="itotal">'+lt.toFixed(2)+'</td><td><button class="rm-btn" onclick="rmItem('+i+')">✕</button></td></tr>';
-  }
-  cBody.innerHTML=ht;
-  var fv=parseFloat(fs.value),sc=fv*lc,gt=tb+sc;
-  var dl="";
-  for(var i=0;i<cart.length;i++){
-    var it=cart[i];
-    dl+='<div class="summary-line"><span>'+it.n+' x '+it.q+'（'+it.sz+'）</span><span>'+(it.p*it.q).toFixed(2)+' 元</span></div>';
-  }
+  for(var i=0;i<cart.length;i++){var it=cart[i],lt=it.p*it.q;tb+=lt;if(it.sk==="large")lc+=it.q;ht+='<tr><td><div class="iname">'+it.n+'</div><div class="isize">'+it.sz+'</div></td><td>'+it.q+'</td><td class="iprice">'+it.p.toFixed(1)+'</td><td class="itotal">'+lt.toFixed(2)+'</td><td><button class="rm-btn" onclick="rmItem('+i+')">✕</button></td></tr>'}
+  cBody.innerHTML=ht;var fv=parseFloat(fs.value),sc=fv*lc,gt=tb+sc;
+  var dl="";for(var i=0;i<cart.length;i++){var it=cart[i];dl+='<div class="summary-line"><span>'+it.n+' x '+it.q+'（'+it.sz+'）</span><span>'+(it.p*it.q).toFixed(2)+' 元</span></div>'}
   if(sc>0)dl+='<div class="summary-line"><span>楼层附加（'+fv+'元 x '+lc+'大件）</span><span>+'+sc.toFixed(2)+' 元</span></div>';
-  dLines.innerHTML=dl;
-  gTotal.innerHTML=gt.toFixed(2)+'<small> 元</small>';
+  dLines.innerHTML=dl;gTotal.innerHTML=gt.toFixed(2)+'<small> 元</small>';submitMsg.classList.remove("show");
 }
 window.rmItem=function(i){cart.splice(i,1);render()};
-clrBtn.addEventListener("click",function(){if(cart.length&&confirm("确定清空全部？")){cart=[];render()}});
 
-cpBtn.addEventListener("click",function(){
-  if(!cart.length)return;
-  var ls=["📦 快递代取报价单","─────────────────",""];
-  for(var i=0;i<cart.length;i++){
-    var it=cart[i];ls.push((i+1)+". "+it.n+" | "+it.sz+" | "+it.q+"件 | "+(it.p*it.q).toFixed(2)+"元");
-  }
-  ls.push("");var fv=parseFloat(fs.value),lc=0;cart.forEach(function(it){if(it.sk==="large")lc+=it.q});
-  var sc=fv*lc;if(sc>0)ls.push("楼层附加：+"+sc.toFixed(2)+"元（"+fv+"元/大件 x "+lc+"件）");
+function buildOrder(){
+  var code=fCode.value.trim()||"(未填)",name=fName.value.trim()||"(未填)",phone=fPhone.value.trim()||"(未填)",addr=fAddr.value.trim()||"(未填)",note=fNote.value.trim()||"";
+  var now=new Date();var time=now.getMonth()+1+"月"+now.getDate()+"日 "+now.getHours()+":"+(now.getMinutes()<10?"0":"")+now.getMinutes();
+  var ls=["📦 快递代取订单","━━━━━━━━━━━━━━━",""];
+  if(cart.length){for(var i=0;i<cart.length;i++){var it=cart[i];ls.push((i+1)+". "+it.n+" | "+it.sz+" | "+it.q+"件 | "+(it.p*it.q).toFixed(2)+"元")}ls.push("")}
+  var fv=parseFloat(fs.value),lc=0;cart.forEach(function(it){if(it.sk==="large")lc+=it.q});var sc=fv*lc;
+  if(cart.length&&sc>0)ls.push("楼层附加：+"+sc.toFixed(2)+"元");
   var tb=0;cart.forEach(function(it){tb+=it.p*it.q});
-  ls.push("─────────────────");ls.push("💰 总计："+(tb+sc).toFixed(2)+" 元");ls.push("");ls.push("💡 纯本地计算");
-  navigator.clipboard.writeText(ls.join("\n")).then(function(){cpBtn.textContent="✅ 已复制";setTimeout(function(){cpBtn.textContent="📋 复制报价单"},2000)}).catch(function(){alert("复制失败")});
+  if(cart.length)ls.push("💰 物品合计："+(tb+sc).toFixed(2)+"元");
+  ls.push("━━━━━━━━━━━━━━━");
+  ls.push("🔑 取件码："+code);
+  ls.push("🏠 送到："+addr);
+  ls.push("👤 "+name+" | "+phone);
+  if(note)ls.push("📝 "+note);
+  ls.push("━━━━━━━━━━━━━━━");
+  ls.push("⏰ 下单时间："+time);
+  return ls.join("\n");
+}
+
+submitBtn.addEventListener("click",function(){
+  if(!fCode.value.trim()||!fName.value.trim()||!fAddr.value.trim()){alert("请填写取件码、姓名和地址");return}
+  var msg=buildOrder();msgContent.textContent=msg;submitMsg.classList.add("show");submitMsg.scrollIntoView({behavior:"smooth",block:"center"});
+  // 尝试发送通知
+  var sk=localStorage.getItem("sendKey")||"";
+  if(sk){notifyStatus.className="notify-status show";notifyStatus.textContent="⏳ 正在推送通知...";sendNotify(sk,msg)}
 });
+previewBtn.addEventListener("click",function(){
+  if(!fCode.value.trim()||!fName.value.trim()||!fAddr.value.trim()){alert("请填写取件码、姓名和地址");return}
+  var msg=buildOrder();msgContent.textContent=msg;submitMsg.classList.add("show");submitMsg.scrollIntoView({behavior:"smooth",block:"center"});
+});
+msgCopyBtn.addEventListener("click",function(){
+  navigator.clipboard.writeText(msgContent.textContent).then(function(){msgCopyBtn.textContent="✅ 已复制，去微信粘贴发送";setTimeout(function(){msgCopyBtn.textContent="📋 复制订单 · 去微信发送"},2500)}).catch(function(){alert("复制失败")});
+});
+
+function sendNotify(msg){var sk="SCT375506TFRad2yHyejY3fJ8JHi1YThGL";
+  var form=document.createElement("form");
+  form.method="POST";form.target="notifyFrame";form.style.display="none";
+  form.action="https://sctapi.ftqq.com/"+sk+".send";
+  var t=document.createElement("input");t.type="hidden";t.name="title";t.value="📦 新订单通知";
+  var d=document.createElement("input");d.type="hidden";d.name="desp";d.value=msg;
+  form.appendChild(t);form.appendChild(d);
+  document.body.appendChild(form);form.submit();
+  setTimeout(function(){document.body.removeChild(form);notifyStatus.className="notify-status show ok";notifyStatus.textContent="✅ 通知已推送，请在微信查收";},2000);
+  setTimeout(function(){notifyStatus.className="notify-status"},8000);
+}
 render();
 })();
+
+
+function saveSendKey(){var v=document.getElementById("sendKeyInput").value.trim();if(v){localStorage.setItem("sendKey",v);document.getElementById("keyStatus").textContent="✅ 已保存"}else{localStorage.removeItem("sendKey");document.getElementById("keyStatus").textContent="已清除"};setTimeout(function(){document.getElementById("keyStatus").textContent=""},3000)}
+
 </script>
-</body></html><!-- deploy trigger -->
+</body></html>
