@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>快递代取 · 在线下单</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -125,7 +125,7 @@ h1{font-size:20px;font-weight:700;margin-bottom:2px;color:#1a1a1a}
   <h1>📦 快递代取 · 在线下单</h1>
   <p class="subtitle">填写信息 → 提交订单 → 扫码付款 → 代取送达</p>
   <div class="step-title"><span class="step-num">1</span> 🔑 取件信息</div>
-  <div class="form-field"><label>快递取件码</label><input type="text" id="fCode" placeholder="例如：6-8-8888 (多个用逗号隔开)"></div>
+  <div class="form-field"><label>📸 取件截图</label><input type="file" id="fCode" accept="image/*" capture="environment"><div class="hint-text">拍摄或上传快递取件信息截图</div><div id="codePreview" style="margin-top:8px;max-width:100%;display:none"><img id="codeImg" style="max-width:100%;border-radius:6px;border:1px solid #ddd"></div></div>
   <div class="form-row">
     <div class="form-field"><label>👤 收货姓名</label><input type="text" id="fName" placeholder="你的称呼"></div>
     <div class="form-field"><label>📱 手机号</label><input type="tel" id="fPhone" placeholder="手机号码"></div>
@@ -137,7 +137,7 @@ h1{font-size:20px;font-weight:700;margin-bottom:2px;color:#1a1a1a}
 <div class="card">
   <div class="step-title"><span class="step-num">2</span> 📥 添加物品 <span class="tag-opt">选填 · 不知道包裹有什么可跳过</span></div>
   <div class="input-group">
-    <input type="text" id="itemInput" placeholder="例：凉席、羽绒服、一箱牛奶" autocomplete="off">
+    <input type="text" id="itemInput" placeholder="例：凉席、羽绒服、一箱牛奶（选填）" autocomplete="off">
     <button id="classifyBtn">识别</button>
   </div>
   <div id="tagResult" class="tag-result"><span class="badge" id="badge"></span><span>AI判断：<span class="hint" id="tagHint"></span></span></div>
@@ -258,7 +258,8 @@ szOpts.forEach(function(b){b.addEventListener("click",function(){szOpts.forEach(
 
 function cl(){var t=inp.value.trim();if(!t){tag.classList.remove("show");cur=null;sel=null;aBtn.disabled=true;szSel.classList.remove("show");return}var r=cls(t);cur=r;tag.classList.add("show");if(r){var s=SZ[r.s];tag.classList.remove("unmatched");tag.classList.add(r.cf==="高"?"matched":"guess");badge.textContent=s.n;badge.className="badge "+s.b;hint.textContent=r.rs+" "+(r.cf==="高"?"|精准":r.cf==="中"?"|推断":"|推测");szSel.classList.add("show");szOpts.forEach(function(b){b.classList.remove("active");if(b.getAttribute("data-s")===r.s)b.classList.add("active")});sel=r.s;aBtn.disabled=false}else{tag.classList.remove("matched","guess");tag.classList.add("unmatched");badge.textContent="--";hint.textContent="请重新输入";szSel.classList.remove("show");aBtn.disabled=true;sel=null}}
 cBtn.addEventListener("click",cl);inp.addEventListener("keydown",function(e){if(e.key==="Enter")cl()});var at;inp.addEventListener("input",function(){clearTimeout(at);at=setTimeout(cl,350)});
-aBtn.addEventListener("click",function(){if(!sel)return;var s=SZ[sel],t=inp.value.trim(),n=parseInt(qty.value,10)||1;cart.push({n:t,sz:s.n,sk:sel,p:s.p,q:n});render();inp.value="";tag.classList.remove("show");szSel.classList.remove("show");cur=null;sel=null;aBtn.disabled=true;qty.value=1});
+aBtn.addEventListener("click",function(){if(!sel)return;var s=SZ[sel],t=inp.value.trim(),n=parseInt(qty.value,10)||1;cart.push({n:t,sz:s.n,sk:sel,p:s.p,q:n});document.getElementById("fCode").addEventListener("change",function(e){var file=e.target.files[0];if(file){var reader=new FileReader();reader.onload=function(ev){var img=document.getElementById("codeImg");img.src=ev.target.result;document.getElementById("codePreview").style.display="block"};reader.readAsDataURL(file)}else{document.getElementById("codePreview").style.display="none"}});
+render();inp.value="";tag.classList.remove("show");szSel.classList.remove("show");cur=null;sel=null;aBtn.disabled=true;qty.value=1});
 
 function render(){var h=cart.length>0;cartCard.style.display=h?"block":"none";if(!h){cBody.innerHTML="";dLines.innerHTML="";gTotal.innerHTML="0.00<small> 元</small>";paySection.classList.remove("show");submitMsg.classList.remove("show");return}
 var ht="",tb=0,lc=0;for(var i=0;i<cart.length;i++){var it=cart[i],lt=it.p*it.q;tb+=lt;if(it.sk==="large")lc+=it.q;ht+='<tr><td><div class="iname">'+it.n+'</div><div class="isize">'+it.sz+'</div></td><td>'+it.q+'</td><td class="iprice">'+it.p.toFixed(1)+'</td><td class="itotal">'+lt.toFixed(2)+'</td><td><button class="rm-btn" onclick="rmItem('+i+')">✕</button></td></tr>'}
@@ -271,18 +272,18 @@ function calcTotal(){var tb=0,lc=0;cart.forEach(function(it){tb+=it.p*it.q;if(it
 // 计算总价（含附加费）的函数
 function getTotalAmount(){return calcTotal()}
 
-function buildOrder(){var code=fCode.value.trim()||"(未填)",name=fName.value.trim()||"(未填)",phone=fPhone.value.trim()||"(未填)",addr=fAddr.value.trim()||"(未填)",note=fNote.value.trim()||"";var now=new Date();var time=(now.getMonth()+1)+"月"+now.getDate()+"日 "+now.getHours()+":"+(now.getMinutes()<10?"0":"")+now.getMinutes();var ls=["📦 快递代取订单","━━━━━━━━━━━━━━━",""];if(cart.length){for(var i=0;i<cart.length;i++){var it=cart[i];ls.push((i+1)+". "+it.n+" | "+it.sz+" | "+it.q+"件 | "+(it.p*it.q).toFixed(2)+"元")}ls.push("")}var fv=parseFloat(fs.value),lc=0;cart.forEach(function(it){if(it.sk==="large")lc+=it.q});var sc=fv*lc;if(cart.length&&sc>0)ls.push("楼层附加：+"+sc.toFixed(2)+"元");var tb=calcTotal();if(cart.length)ls.push("💰 合计："+tb.toFixed(2)+"元");else ls.push("💰 物品费用待确认");ls.push("━━━━━━━━━━━━━━━");ls.push("🔑 取件码："+code);ls.push("🏠 送到："+addr);ls.push("👤 "+name+" | "+phone);if(note)ls.push("📝 "+note);ls.push("⏰ 下单时间："+time);return ls.join("\n")}
+function buildOrder(){var code=fCode.files&&fCode.files[0]?fCode.files[0].name:"(已截图)",name=fName.value.trim()||"(未填)",phone=fPhone.value.trim()||"(未填)",addr=fAddr.value.trim()||"(未填)",note=fNote.value.trim()||"";var now=new Date();var time=(now.getMonth()+1)+"月"+now.getDate()+"日 "+now.getHours()+":"+(now.getMinutes()<10?"0":"")+now.getMinutes();var ls=["📦 快递代取订单","━━━━━━━━━━━━━━━",""];if(cart.length){for(var i=0;i<cart.length;i++){var it=cart[i];ls.push((i+1)+". "+it.n+" | "+it.sz+" | "+it.q+"件 | "+(it.p*it.q).toFixed(2)+"元")}ls.push("")}var fv=parseFloat(fs.value),lc=0;cart.forEach(function(it){if(it.sk==="large")lc+=it.q});var sc=fv*lc;if(cart.length&&sc>0)ls.push("楼层附加：+"+sc.toFixed(2)+"元");var tb=calcTotal();if(cart.length)ls.push("💰 合计："+tb.toFixed(2)+"元");else ls.push("💰 物品费用待确认");ls.push("━━━━━━━━━━━━━━━");ls.push("🔑 取件码："+code);ls.push("🏠 送到："+addr);ls.push("👤 "+name+" | "+phone);if(note)ls.push("📝 "+note);ls.push("⏰ 下单时间："+time);return ls.join("\n")}
 
-function sendNotify(msg){notifyStatus.className="notify-status show";notifyStatus.textContent="⏳ 正在推送通知...";var fd=new FormData();fd.append("title","📦 新订单通知");fd.append("desp",msg);fetch("https://sctapi.ftqq.com/"+SEND_KEY+".send",{method:"POST",body:fd,mode:"no-cors"}).then(function(){notifyStatus.className="notify-status show ok";notifyStatus.textContent="✅ 通知已推送，请在微信查收";}).catch(function(){notifyStatus.className="notify-status show ok";notifyStatus.textContent="✅ 通知已发送";});setTimeout(function(){notifyStatus.className="notify-status"},8000)}
+function sendNotify(msg){notifyStatus.className="notify-status show";notifyStatus.textContent="⏳ 正在推送通知...";var fd=new FormData();fd.append("title","📦 新订单通知");fd.append("desp",msg);fetch("https://sctapi.ftqq.com/"+SEND_KEY+".send",{method:"POST",body:fd}).then(function(){notifyStatus.className="notify-status show ok";notifyStatus.textContent="✅ 通知已推送，请在微信查收";}).catch(function(){notifyStatus.className="notify-status show ok";notifyStatus.textContent="✅ 通知已发送";});setTimeout(function(){notifyStatus.className="notify-status"},8000)}
 
-submitBtn.addEventListener("click",function(){if(!fCode.value.trim()||!fName.value.trim()||!fAddr.value.trim()){alert("请填写取件码、姓名和地址");return}
+submitBtn.addEventListener("click",function(){if(!fName.value.trim()||!fAddr.value.trim()){alert("请填写姓名和地址");return}
 var msg=buildOrder();msgContent.textContent=msg;submitMsg.classList.add("show");
 var total=getTotalAmount();if(total>0){payAmount.innerHTML=total.toFixed(2)+'<small> 元</small>';payBtn.textContent="✅ 我已付款 · 通知代取"}else{payAmount.innerHTML="待确认";payBtn.textContent="📩 通知代取取件"}
 paySection.classList.add("show");payStatus.classList.remove("show");
 submitMsg.scrollIntoView({behavior:"smooth",block:"center"});
 sendNotify(msg)});
 
-previewBtn.addEventListener("click",function(){if(!fCode.value.trim()||!fName.value.trim()||!fAddr.value.trim()){alert("请填写取件码、姓名和地址");return}
+previewBtn.addEventListener("click",function(){if(!fName.value.trim()||!fAddr.value.trim()){alert("请填写姓名和地址");return}
 var msg=buildOrder();msgContent.textContent=msg;submitMsg.classList.add("show");submitMsg.scrollIntoView({behavior:"smooth",block:"center"})});
 
 msgCopyBtn.addEventListener("click",function(){navigator.clipboard.writeText(msgContent.textContent).then(function(){msgCopyBtn.textContent="✅ 已复制，去微信粘贴发送";setTimeout(function(){msgCopyBtn.textContent="📋 复制订单 · 去微信发送"},2500)}).catch(function(){alert("复制失败")})});
@@ -292,6 +293,7 @@ var name=fName.value.trim()||"(未填)",total=getTotalAmount().toFixed(2),code=f
 var payMsg="🧧 客户已付款确认\n━━━━━━━━━━━━━━━\n💰 金额："+total+" 元\n👤 "+name+"\n🔑 取件码："+code+"\n━━━━━━━━━━━━━━━\n请查看微信收款记录确认";
 sendNotify(payMsg)});
 
+document.getElementById("fCode").addEventListener("change",function(e){var file=e.target.files[0];if(file){var reader=new FileReader();reader.onload=function(ev){var img=document.getElementById("codeImg");img.src=ev.target.result;document.getElementById("codePreview").style.display="block"};reader.readAsDataURL(file)}else{document.getElementById("codePreview").style.display="none"}});
 render();
 </script>
 </body></html>
