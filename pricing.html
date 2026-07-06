@@ -1,0 +1,325 @@
+﻿<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>快递代取 · AI智能计价</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f5f5f5;min-height:100vh;padding:24px 16px;display:flex;flex-direction:column;align-items:center}
+.container{max-width:680px;width:100%}
+.card{background:#fff;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.08);padding:24px 20px;margin-bottom:14px}
+.card:last-child{margin-bottom:0}
+h1{font-size:20px;font-weight:700;margin-bottom:2px;color:#1a1a1a}
+.subtitle{font-size:13px;color:#999;margin-bottom:14px}
+.section-title{font-size:14px;font-weight:600;margin-bottom:10px;color:#1a1a1a;display:flex;align-items:center;gap:6px}
+.input-group{display:flex;gap:8px;margin-bottom:8px}
+.input-group input{flex:1;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px;outline:none}
+.input-group input:focus{border-color:#4a90d9}
+.input-group button{padding:10px 20px;border:none;border-radius:8px;background:#4a90d9;color:#fff;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap}
+.input-group button:hover{background:#357abd}
+.tag-result{padding:10px 14px;border-radius:8px;margin-bottom:8px;display:none;align-items:center;gap:8px;font-size:13px;flex-wrap:wrap}
+.tag-result.show{display:flex}
+.tag-result.matched{background:#eef6ff}
+.tag-result.guess{background:#f0fdf4;border:1px solid #bbf7d0}
+.tag-result.unmatched{background:#fff7ed;border:1px solid #fed7aa}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap}
+.badge-sm{background:#e0f2fe;color:#0369a1}
+.badge-md{background:#fef3c7;color:#92400e}
+.badge-lg{background:#fee2e2;color:#b91c1c}
+.hint{color:#888;font-size:12px;flex:1}
+.size-select{display:none;gap:6px;margin-bottom:10px;align-items:center;flex-wrap:wrap;padding:8px 0}
+.size-select.show{display:flex}
+.size-select .sl{font-size:13px;color:#888;white-space:nowrap;min-width:44px}
+.size-opt{padding:5px 14px;border:2px solid #e0e0e0;border-radius:20px;background:#fff;font-size:13px;cursor:pointer;color:#666}
+.size-opt:hover{border-color:#4a90d9;color:#4a90d9}
+.size-opt.active{border-color:#4a90d9;background:#eef6ff;color:#1a1a1a;font-weight:600}
+.size-opt .sopt-price{display:inline-block;font-size:11px;color:#d9534f;font-weight:600}
+.add-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.add-row label{font-size:13px;color:#555;min-width:40px}
+.add-row input[type=number]{width:60px;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:14px;text-align:center}
+.add-row .add-btn{padding:7px 18px;border:none;border-radius:6px;background:#10b981;color:#fff;font-size:13px;font-weight:500;cursor:pointer}
+.add-row .add-btn:hover{background:#059669}
+.add-row .add-btn:disabled{background:#a7f3d0;cursor:default}
+.common-items{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
+.common-items button{padding:3px 10px;border:1px solid #e0e0e0;border-radius:14px;background:#fafafa;font-size:12px;color:#555;cursor:pointer}
+.common-items button:hover{background:#eef6ff;border-color:#4a90d9;color:#4a90d9}
+.cart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.cart-header .clear-btn{padding:4px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;font-size:12px;color:#999;cursor:pointer}
+.cart-header .clear-btn:hover{background:#fef2f2;border-color:#fca5a5;color:#dc2626}
+.cart-table{width:100%;border-collapse:collapse;font-size:13px}
+.cart-table th{text-align:left;font-weight:500;color:#888;padding:7px 4px;border-bottom:1px solid #eee;font-size:12px}
+.cart-table td{padding:8px 4px;border-bottom:1px solid #f5f5f5;vertical-align:middle}
+.cart-table tr:last-child td{border-bottom:none}
+.cart-table .iname{font-weight:500;color:#1a1a1a}
+.cart-table .isize{font-size:11px;color:#888}
+.cart-table .iprice{text-align:right}
+.cart-table .itotal{text-align:right;font-weight:600;color:#1a1a1a}
+.cart-table .rm-btn{color:#ccc;cursor:pointer;background:none;border:none;font-size:15px;padding:0 4px}
+.cart-table .rm-btn:hover{color:#d9534f}
+.cart-empty{text-align:center;color:#ccc;padding:16px 0;font-size:13px}
+.summary-row{margin-top:12px;padding-top:12px;border-top:1px solid #eee}
+.summary-line{display:flex;justify-content:space-between;font-size:13px;color:#666;padding:3px 0}
+.floor-line{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#666;padding:6px 0}
+.floor-line select{padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:12px;background:#fff}
+.summary-line.total{font-size:18px;font-weight:700;color:#d9534f;padding-top:8px;border-top:1px dashed #ddd;margin-top:6px}
+.summary-line.total small{font-size:14px;font-weight:400}
+.summary-actions{margin-top:12px}
+.summary-actions button{width:100%;padding:10px;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:#4a90d9;color:#fff}
+.summary-actions button:hover{background:#357abd}
+.price-table{width:100%;border-collapse:collapse;font-size:13px}
+.price-table th{text-align:left;font-weight:500;color:#888;padding-bottom:6px;border-bottom:1px solid #eee;font-size:12px}
+.price-table td{padding:7px 0;border-bottom:1px solid #f0f0f0;vertical-align:top}
+.price-table tr:last-child td{border-bottom:none}
+.price-table .cate{font-weight:600;color:#1a1a1a;white-space:nowrap}
+.price-table .desc{color:#666;line-height:1.4}
+.price-table .price{text-align:right;font-weight:600;color:#d9534f;white-space:nowrap}
+.price-table .ex{color:#aaa;font-size:11px}
+.surcharge-row td{padding-top:3px;font-size:12px;color:#999}
+.surcharge-row .price{color:#999;font-weight:400}
+.footer{text-align:center;padding:14px 0 4px;font-size:12px;color:#bbb;line-height:1.6}
+@media(max-width:480px){body{padding:12px 8px}.card{padding:18px 14px}.cart-table{font-size:12px}.summary-line.total{font-size:16px}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="card" style="margin-top:0">
+  <h1>📦 快递代取 · 智能计价</h1>
+  <p class="subtitle">AI自动识别大小 · 可手动调整 · 多件混装汇总报价</p>
+  <div class="section-title">🔍 输入物品</div>
+  <div class="input-group">
+    <input type="text" id="itemInput" placeholder="例：凉席、羽绒服、一箱牛奶、手机" autocomplete="off">
+    <button id="classifyBtn">识别</button>
+  </div>
+  <div id="tagResult" class="tag-result">
+    <span class="badge" id="badge"></span>
+    <span>AI判断：<span class="hint" id="tagHint"></span></span>
+  </div>
+  <div class="size-select" id="sizeSelect">
+    <span class="sl">确认大小：</span>
+    <button class="size-opt" data-s="small">小件 <span class="sopt-price">1.5元</span></button>
+    <button class="size-opt" data-s="medium">中件 <span class="sopt-price">2.5元</span></button>
+    <button class="size-opt" data-s="large">大件 <span class="sopt-price">6.5元</span></button>
+  </div>
+  <div class="add-row">
+    <label>数量</label>
+    <input type="number" id="addQty" value="1" min="1" max="999">
+    <button class="add-btn" id="addBtn" disabled>➕ 添加到订单</button>
+  </div>
+  <div class="common-items" id="commonItems"></div>
+</div>
+
+<div class="card">
+  <div class="cart-header">
+    <div class="section-title" style="margin-bottom:0">📋 订单明细</div>
+    <button class="clear-btn" id="clearBtn">清空全部</button>
+  </div>
+  <div id="cartEmpty" class="cart-empty">还没有添加物品</div>
+  <table class="cart-table" id="cartTable" style="display:none">
+    <thead><tr><th style="width:38%">物品</th><th style="width:13%">数量</th><th style="width:18%;text-align:right">单价</th><th style="width:18%;text-align:right">小计</th><th style="width:8%"></th></tr></thead>
+    <tbody id="cartBody"></tbody>
+  </table>
+  <div class="summary-row" id="summaryArea" style="display:none">
+    <div id="detailLines"></div>
+    <div class="floor-line"><span>🚚 送到</span><span id="floorSelector"></span></div>
+    <div class="summary-line total" id="grandTotal">0.00<small> 元</small></div>
+    <div class="summary-actions">
+      <button id="copyBtn">📋 复制报价单</button>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="section-title">📋 费率标准</div>
+  <table class="price-table">
+    <thead><tr><th>类别</th><th>参考范围</th><th>单价</th></tr></thead>
+    <tbody>
+      <tr><td class="cate">小件</td><td class="desc">不超过鞋盒的盒类 · 包装类<br><span class="ex">衣服·书籍·手机·文件袋·小零食</span></td><td class="price">1.5 元</td></tr>
+      <tr><td class="cate">中件</td><td class="desc">鞋盒大小 · 中小型纸箱 · 抽纸整提<br><span class="ex">鞋子·整提纸巾·小家电·背包·羽绒服</span></td><td class="price">2.5 元</td></tr>
+      <tr><td class="cate">大件</td><td class="desc">一箱一箱（类似赣南脐橙）<br><span class="ex">整箱水果·整箱饮料·被子·行李箱·微波炉</span></td><td class="price">6.5 元</td></tr>
+      <tr class="surcharge-row"><td></td><td class="desc">四楼以上（含四楼），每件大件加收</td><td class="price">+2 元</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="footer">纯本地运行 · 不上传任何数据</div>
+</div>
+
+<script>
+(function(){
+var CATEGORIES=[
+{id:"bedding",name:"床上用品",kw:["床","席","垫","褥","毯","被","枕","套件","四件套","被套","床单","床笠"],items:{"被子":"large","棉被":"large","羽绒被":"large","蚕丝被":"large","空调被":"medium","凉席":"medium","席子":"medium","竹席":"medium","藤席":"medium","冰丝席":"medium","麻将席":"medium","床垫":"large","床垫大":"large","席梦思":"large","毛毯":"large","毯子":"medium","毛巾毯":"medium","夏凉被":"medium","枕头":"medium","枕芯":"medium","抱枕":"medium","靠枕":"medium","腰靠":"medium","床单":"medium","床笠":"medium","被套":"medium"},def:"medium"},
+{id:"clothing",name:"衣物",kw:["衣服","上衣","下装","外套","裤子","裙子","T恤","衬衫","卫衣","毛衣","大衣","羽绒","棉服","棉袄","冲锋衣","风衣","皮衣","夹克","马甲","背心","内裤","内衣","袜子","睡衣","睡裤","泳衣","泳裤","领带","围巾","手套","帽子","丝巾"],items:{"羽绒服":"medium","棉服":"medium","棉袄":"medium","冲锋衣":"medium","大衣":"medium","皮衣":"medium","皮草":"medium","风衣":"medium","厚外套":"medium","棉衣":"medium","毛衣":"small","卫衣":"small","T恤":"small","衬衫":"small","裤子":"small","裙子":"small","西装":"medium"},def:"small"},
+{id:"shoes",name:"鞋帽",kw:["鞋","靴","袜","帽","拖鞋","凉鞋","运动鞋","皮鞋","布鞋","高跟鞋"],items:{"鞋盒":"medium","鞋":"medium","鞋子":"medium","运动鞋":"medium","皮鞋":"medium","靴子":"medium","雪地靴":"medium","高跟鞋":"medium","凉鞋":"small","拖鞋":"small","帽子":"small","头盔":"medium","安全帽":"medium"},def:"medium"},
+{id:"bags",name:"箱包",kw:["包","箱","袋","背包","挎包","手提包","行李箱","拉杆箱","旅行箱","书包","钱包"],items:{"行李箱":"large","拉杆箱":"large","旅行箱":"large","登机箱":"medium","书包":"medium","背包":"medium","双肩包":"medium","电脑包":"medium","手提包":"medium","斜挎包":"small","单肩包":"small","钱包":"small","卡包":"small","零钱包":"small","化妆包":"small"},def:"medium"},
+{id:"digital",name:"数码",kw:["手机","电脑","平板","iPad","耳机","充电器","鼠标","键盘","相机","音箱","U盘","硬盘","显示器","打印机"],items:{"手机":"small","手机盒":"small","平板":"small","iPad":"small","平板电脑":"medium","笔记本电脑":"medium","电脑":"medium","笔记本大":"medium","电脑包":"medium","显示器":"large","台式机":"large","电脑主机":"large","打印机":"large","一体机":"large","耳机":"small","音箱":"small","音响":"small","相机":"medium","鼠标":"small","键盘":"small"},def:"small"},
+{id:"food",name:"食品",kw:["零食","饼干","薯片","方便面","面包","蛋糕","糖果","巧克力","水果","苹果","香蕉","脐橙","猕猴桃","米","面","油","饮料","牛奶","酸奶","矿泉水","茶叶","咖啡","烟","酒"],items:{"脐橙":"large","赣南脐橙":"large","整箱水果":"large","牛奶整箱":"large","酸奶整箱":"large","饮料整箱":"large","大米整袋":"large","面粉整袋":"large","食用油整桶":"large","烟":"small","香烟":"small","打火机":"small","茶叶":"small","咖啡":"small"},def:"small"},
+{id:"home",name:"家居日用",kw:["水杯","杯子","保温杯","雨伞","伞","钥匙","纸巾","抽纸","洗衣液","洗洁精","洗发水","沐浴露","牙膏","牙刷","毛巾","脸盆","水桶","衣架","收纳","台灯","灯","风扇","加湿器","垃圾桶"],items:{"抽纸整提":"medium","纸巾整提":"medium","卷纸整提":"medium","收纳箱":"medium","收纳盒":"small","小台灯":"medium","小风扇":"medium","加湿器":"medium","脸盆":"medium","水桶":"medium","伞":"small","水杯":"small","杯子":"small","保温杯":"small","保温壶":"medium"},def:"small"},
+{id:"kitchen",name:"厨电",kw:["电饭煲","电热水壶","微波炉","电烤箱","空气炸锅","电磁炉","电压力锅","电炖锅","榨汁机","破壁机","豆浆机","咖啡机","锅","碗","盘"],items:{"微波炉":"large","电烤箱":"large","空气炸锅":"large","电磁炉":"medium","电压力锅":"large","电饭煲":"medium","电饭煲大":"large","电热水壶":"medium","榨汁机":"medium","破壁机":"large","豆浆机":"medium","锅":"medium","炒锅":"medium","汤锅":"large","高压锅":"medium"},def:"medium"},
+{id:"appliance",name:"大家电",kw:["冰箱","洗衣机","电视","电视机","空调","热水器","抽油烟机","洗碗机","烘干机"],items:{"冰箱":"large","洗衣机":"large","电视":"large","电视机":"large","空调":"large","热水器":"large","抽油烟机":"large","洗碗机":"large","烘干机":"large"},def:"large"},
+{id:"sports",name:"运动",kw:["篮球","足球","排球","羽毛球","乒乓球","网球","瑜伽","哑铃","杠铃","跳绳","泳镜","泳帽","球拍","帐篷","睡袋"],items:{"瑜伽垫":"medium","篮球":"medium","足球":"medium","排球":"medium","羽毛球拍":"medium","帐篷":"large","睡袋":"large","折叠床":"large","跑步机":"large","动感单车":"large","哑铃":"medium","杠铃":"large"},def:"medium"},
+{id:"pet",name:"宠物",kw:["猫","狗","宠","粮","砂","窝","笼","牵引"],items:{"猫粮":"large","狗粮":"large","猫砂":"large","猫砂盆":"large","笼子":"large"},def:"medium"},
+{id:"toy",name:"玩具",kw:["玩具","积木","拼图","手办","公仔","娃娃","玩偶","乐高","盲盒","卡片","棋","牌"],items:{"毛绒玩具":"medium","公仔":"medium","大玩偶":"medium","手办":"small","盲盒":"small","卡片":"small"},def:"small"},
+{id:"tool",name:"工具",kw:["工具","锤","钳","扳手","螺丝刀","电钻","锯","梯子","五金"],items:{"梯子":"large","电钻":"medium","工具箱":"medium"},def:"medium"}
+];
+var SZ={small:{n:"小件",p:1.5,b:"badge-sm"},medium:{n:"中件",p:2.5,b:"badge-md"},large:{n:"大件",p:6.5,b:"badge-lg"}};
+
+function cls(t){
+  t=t.trim();if(!t)return null;
+  var r=null;
+  function h(s,w){return s.indexOf(w)!==-1}
+  if(/超大|巨型/.test(t))r={s:"large",rs:"超大/巨型",cf:"高"};
+  if(!r&&/[一二两三四五六七八九十\d百千]+箱|整箱|一箱|大箱/.test(t)&&!/小箱/.test(t))r={s:"large",rs:'量词"箱"',cf:"高"};
+  if(!r&&/[一二两三四五六七八九十\d百千]+盒|小盒/.test(t)&&!/大盒|鞋盒/.test(t))r={s:"small",rs:'量词"盒"',cf:"高"};
+  if(!r&&/[一二两三四五六七八九十\d百千]+提|整提/.test(t))r={s:"medium",rs:'量词"提"',cf:"高"};
+  if(!r&&/[一二两三四五六七八九十\d百千]+袋|整袋|大袋/.test(t)&&!/小袋/.test(t))r={s:"large",rs:'量词"袋"',cf:"高"};
+  if(!r&&/[一二两三四五六七八九十\d百千]+包|大包|整包/.test(t)&&!/小包/.test(t))r={s:"large",rs:'量词"包"',cf:"高"};
+  if(!r&&/[一二两三四五六七八九十\d百千]+桶|整桶|大桶/.test(t)&&!/小桶/.test(t))r={s:"large",rs:'量词"桶"',cf:"高"};
+  if(!r&&/[一二两三四五六七八九十\d百千]+瓶|整瓶|大瓶/.test(t)&&!/小瓶/.test(t))r={s:"medium",rs:'量词"瓶"',cf:"高"};
+  if(!r&&/^小/.test(t))r={s:"small",rs:'含"小"',cf:"高"};
+  if(!r&&/^中[的件等]/.test(t))r={s:"medium",rs:'含"中"',cf:"高"};
+  if(!r&&/^大[的件]/.test(t))r={s:"large",rs:'含"大"',cf:"高"};
+  if(!r){
+    var mc=[];
+    for(var i=0;i<CATEGORIES.length;i++){
+      var c=CATEGORIES[i],m=false;
+      for(var j=0;j<c.kw.length;j++){if(h(t,c.kw[j])){m=true;break}}
+      if(m){
+        var fi=null;for(var k in c.items){if(h(t,k)){fi=k;break}}
+        mc.push({c:c,fi:fi,sc:cm(t,c.kw)})
+      }
+    }
+    mc.sort(function(a,b){return b.sc-a.sc});
+    if(mc.length>0){
+      var tp=mc[0];
+      if(tp.fi)r={s:tp.c.items[tp.fi],rs:'"'+tp.c.name+'"->'+tp.fi,cf:"高"};
+      else r={s:tp.c.def,rs:'"'+tp.c.name+'"类',cf:"中"};
+    }
+  }
+  if(!r){
+    var cc={};
+    for(var i=0;i<CATEGORIES.length;i++)
+      for(var j=0;j<CATEGORIES[i].kw.length;j++){var kw=CATEGORIES[i].kw[j];if(kw.length>=2&&h(t,kw)){if(!cc[i])cc[i]=0;cc[i]++}}
+    var bi=-1,bc=0;for(var idx in cc){if(cc[idx]>bc){bc=cc[idx];bi=parseInt(idx)}}
+    if(bi>=0)r={s:CATEGORIES[bi].def,rs:'推断为"'+CATEGORIES[bi].name+'"',cf:"低"};
+  }
+  if(!r){
+    if(/箱|包裹|快递|行李/.test(t))r={s:"large",rs:'含容器词',cf:"低"};
+    else if(/盒|袋|包|提/.test(t))r={s:"small",rs:'含容器词',cf:"低"};
+    else r={s:"medium",rs:'常规物品',cf:"低"};
+  }
+  return r;
+}
+function cm(t,kw){var c=0;for(var i=0;i<kw.length;i++){if(t.indexOf(kw[i])!==-1)c++}return c}
+
+var cart=[];
+var inp=document.getElementById("itemInput"),cBtn=document.getElementById("classifyBtn");
+var tag=document.getElementById("tagResult"),badge=document.getElementById("badge"),hint=document.getElementById("tagHint");
+var szSel=document.getElementById("sizeSelect"),szOpts=document.querySelectorAll(".size-opt");
+var qty=document.getElementById("addQty"),aBtn=document.getElementById("addBtn");
+var cEmpty=document.getElementById("cartEmpty"),cTable=document.getElementById("cartTable"),cBody=document.getElementById("cartBody");
+var sArea=document.getElementById("summaryArea"),dLines=document.getElementById("detailLines"),gTotal=document.getElementById("grandTotal");
+var clrBtn=document.getElementById("clearBtn"),cpBtn=document.getElementById("copyBtn");
+var floorSel=document.getElementById("floorSelector"),common=document.getElementById("commonItems");
+var cur=null,sel=null;
+
+var fs=document.createElement("select");
+fs.innerHTML='<option value="0">1 - 3 楼（无附加费）</option><option value="2" selected>4 楼及以上（大件 +2 元/件）</option>';
+fs.addEventListener("change",render);
+floorSel.appendChild(fs);
+
+szOpts.forEach(function(b){
+  b.addEventListener("click",function(){
+    szOpts.forEach(function(x){x.classList.remove("active")});
+    this.classList.add("active");
+    sel=this.getAttribute("data-s");
+    var s=SZ[sel];
+    badge.textContent=s.n;badge.className="badge "+s.b;
+    hint.textContent="已手动选择";
+    aBtn.disabled=false;
+  });
+});
+
+["{s}衣服","{s}T恤","{s}手机","{s}书籍","{s}杯子","{m}鞋子","{m}鞋盒","{m}羽绒服","{m}凉席","{m}小家电","{l}脐橙整箱","{l}饮料整箱","{l}被子","{l}行李箱","{l}大箱子"].forEach(function(l){
+  var b=document.createElement("button");
+  var ic=l.startsWith("{s}")?"🔹":l.startsWith("{m}")?"🔶":"🔴";
+  b.textContent=ic+" "+l.replace(/^\{[sml]\}/,"");
+  b.addEventListener("click",function(){inp.value=l.replace(/^\{[sml]\}/,"");cl()});
+  common.appendChild(b);
+});
+
+function cl(){
+  var t=inp.value.trim();
+  if(!t){tag.classList.remove("show");cur=null;sel=null;aBtn.disabled=true;szSel.classList.remove("show");return}
+  var r=cls(t);
+  cur=r;tag.classList.add("show");
+  if(r){
+    var s=SZ[r.s];
+    tag.classList.remove("unmatched");
+    tag.classList.add(r.cf==="高"?"matched":"guess");
+    badge.textContent=s.n;badge.className="badge "+s.b;
+    hint.textContent=r.rs+" "+(r.cf==="高"?"|精准":r.cf==="中"?"|推断":"|推测");
+    szSel.classList.add("show");
+    szOpts.forEach(function(b){
+      b.classList.remove("active");
+      if(b.getAttribute("data-s")===r.s)b.classList.add("active");
+    });
+    sel=r.s;
+    aBtn.disabled=false;
+  }else{
+    tag.classList.remove("matched","guess");tag.classList.add("unmatched");
+    badge.textContent="--";hint.textContent="请重新输入";
+    szSel.classList.remove("show");aBtn.disabled=true;sel=null;
+  }
+}
+
+cBtn.addEventListener("click",cl);
+inp.addEventListener("keydown",function(e){if(e.key==="Enter")cl()});
+var at;inp.addEventListener("input",function(){clearTimeout(at);at=setTimeout(cl,350)});
+
+aBtn.addEventListener("click",function(){
+  if(!sel)return;
+  var s=SZ[sel],t=inp.value.trim(),n=parseInt(qty.value,10)||1;
+  cart.push({n:t,sz:s.n,sk:sel,p:s.p,q:n});
+  render();inp.value="";tag.classList.remove("show");szSel.classList.remove("show");cur=null;sel=null;aBtn.disabled=true;qty.value=1;
+});
+
+function render(){
+  var h=cart.length>0;
+  cEmpty.style.display=h?"none":"block";
+  cTable.style.display=h?"":"none";
+  sArea.style.display=h?"block":"none";
+  if(!h){cBody.innerHTML="";dLines.innerHTML="";gTotal.innerHTML="0.00<small> 元</small>";return}
+  var ht="",tb=0,lc=0;
+  for(var i=0;i<cart.length;i++){
+    var it=cart[i],lt=it.p*it.q;tb+=lt;
+    if(it.sk==="large")lc+=it.q;
+    ht+='<tr><td><div class="iname">'+it.n+'</div><div class="isize">'+it.sz+'</div></td><td>'+it.q+'</td><td class="iprice">'+it.p.toFixed(1)+'</td><td class="itotal">'+lt.toFixed(2)+'</td><td><button class="rm-btn" onclick="rmItem('+i+')">✕</button></td></tr>';
+  }
+  cBody.innerHTML=ht;
+  var fv=parseFloat(fs.value),sc=fv*lc,gt=tb+sc;
+  var dl="";
+  for(var i=0;i<cart.length;i++){
+    var it=cart[i];
+    dl+='<div class="summary-line"><span>'+it.n+' x '+it.q+'（'+it.sz+'）</span><span>'+(it.p*it.q).toFixed(2)+' 元</span></div>';
+  }
+  if(sc>0)dl+='<div class="summary-line"><span>楼层附加（'+fv+'元 x '+lc+'大件）</span><span>+'+sc.toFixed(2)+' 元</span></div>';
+  dLines.innerHTML=dl;
+  gTotal.innerHTML=gt.toFixed(2)+'<small> 元</small>';
+}
+window.rmItem=function(i){cart.splice(i,1);render()};
+clrBtn.addEventListener("click",function(){if(cart.length&&confirm("确定清空全部？")){cart=[];render()}});
+
+cpBtn.addEventListener("click",function(){
+  if(!cart.length)return;
+  var ls=["📦 快递代取报价单","─────────────────",""];
+  for(var i=0;i<cart.length;i++){
+    var it=cart[i];ls.push((i+1)+". "+it.n+" | "+it.sz+" | "+it.q+"件 | "+(it.p*it.q).toFixed(2)+"元");
+  }
+  ls.push("");var fv=parseFloat(fs.value),lc=0;cart.forEach(function(it){if(it.sk==="large")lc+=it.q});
+  var sc=fv*lc;if(sc>0)ls.push("楼层附加：+"+sc.toFixed(2)+"元（"+fv+"元/大件 x "+lc+"件）");
+  var tb=0;cart.forEach(function(it){tb+=it.p*it.q});
+  ls.push("─────────────────");ls.push("💰 总计："+(tb+sc).toFixed(2)+" 元");ls.push("");ls.push("💡 纯本地计算");
+  navigator.clipboard.writeText(ls.join("\n")).then(function(){cpBtn.textContent="✅ 已复制";setTimeout(function(){cpBtn.textContent="📋 复制报价单"},2000)}).catch(function(){alert("复制失败")});
+});
+render();
+})();
+</script>
+</body></html>
